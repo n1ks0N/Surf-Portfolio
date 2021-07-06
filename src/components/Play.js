@@ -5,7 +5,6 @@ import { fb } from '../utils/firebase';
 
 const Play = () => {
   const [sites, setSites] = useState([])
-  const [url, setUrl] = useState('') // добавляющийся пользователем
   const [currentSite, setCurrentSite] = useState('') // показывающийся пользователю
   const [count, setCount] = useState(0)
 
@@ -13,7 +12,6 @@ const Play = () => {
   const [date, setDate] = useState(false)
   const params = window.location.search.split('?')[1].split('&').map(data => data.split('=')[1])
   useEffect(() => {
-    setUrl(params[2])
     fb.firestore().collection('database').doc('sites').get().then((doc) => {
       if (doc.exists) {
         const sitesData = doc.data()[params[0]][params[1]]
