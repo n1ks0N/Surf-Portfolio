@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { urlAd, keyAd } from '../utils/api.json';
-import { Route, Switch, Link, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { Route, Switch, Link, useLocation, Redirect } from 'react-router-dom';
 import Admin from './Admin'
 import Play from './Play'
 import './App.css';
@@ -26,18 +25,18 @@ const App = () => {
 		script.async = true;
 		document.body.appendChild(script);
 
-			fb.firestore().collection('database').doc('sites').get().then((doc) => {
-				if (doc.exists) {
-					setSites(doc.data());
-					const firstCategory = Object.keys(doc.data())[0]
-					setCategory(() => firstCategory)
-					setLink(prev => `${prev.split('?')[0]}?category=${firstCategory}&subcategory=${Object.keys(doc.data()[firstCategory])[0]}&url=0`)
-				}
-			})
-			
-			fb.firestore().collection('database').doc('admin').get().then((doc) => {
-				if (doc.exists) {
-				
+		fb.firestore().collection('database').doc('sites').get().then((doc) => {
+			if (doc.exists) {
+				setSites(doc.data());
+				const firstCategory = Object.keys(doc.data())[0]
+				setCategory(() => firstCategory)
+				setLink(prev => `${prev.split('?')[0]}?category=${firstCategory}&subcategory=${Object.keys(doc.data()[firstCategory])[0]}&url=0`)
+			}
+		})
+
+		fb.firestore().collection('database').doc('admin').get().then((doc) => {
+			if (doc.exists) {
+
 				const result = doc.data();
 				setData(() => result);
 				setCount(() => result.footer.linkslot.length + result.header.linkslot.length)
@@ -60,8 +59,8 @@ const App = () => {
 					script.async = true;
 					document.body.appendChild(script);
 				}
-				}
-			})
+			}
+		})
 
 		// автор
 		console.log(`
@@ -85,7 +84,7 @@ by https://github.com/n1ks0N
 	}
 	const handleChange = (val, type) => {
 		const arr = link.split('?')[1].split('&')
-		const index = arr.findIndex(data => data.split('=')[0] === type) 
+		const index = arr.findIndex(data => data.split('=')[0] === type)
 		arr[index] = arr[index].split('=').map((item, i) => i === 1 ? val : item).join('=')
 		const newParams = arr.join('&')
 		setLink(`${link.split('?')[0]}?${newParams}`)
@@ -93,6 +92,16 @@ by https://github.com/n1ks0N
 	const categoryChange = () => {
 		setCategory(categoryRef.current.value)
 		handleChange(categoryRef.current.value, 'category')
+	}
+	const redirect = () => {
+		fb.firestore().collection('database').doc('admin').get().then((doc) => {
+			if (doc.exists) {
+				const search = doc.data().directions.info.urls.includes(link.split('=')[3])
+				if (!search) {
+					window.open(link, "_blank")
+				}
+			}
+		})
 	}
 	return (
 		<>
@@ -134,14 +143,15 @@ by https://github.com/n1ks0N
 							))}
 					</div>
 				</div>
-					<Switch>
-						<Route exact path="/">
-						{!!data && 
+				<Switch>
+					<Route exact path="/admin" component={Admin} />
+					<Route exact path="/">
+						{!!data &&
 							<div className="app">
 								<h1>Сервис бесплатного взаимного продвижения</h1>
-								<h3>Сайтов в просмотре: {}</h3>
-								<h3>Просмотров всего: {}</h3>
-								<p dangerouslySetInnerHTML={{__html: data.directions.mainText}} />
+								<h3>Сайтов в просмотре: { }</h3>
+								<h3>Просмотров всего: { }</h3>
+								<p dangerouslySetInnerHTML={{ __html: data.directions.texts.mainText }} />
 								<div>
 									<div className="mb-3">
 										<label htmlFor="urlInput1" className="form-label">Ссылка на сайт</label>
@@ -153,17 +163,16 @@ by https://github.com/n1ks0N
 									</select>
 									<label className="form-label">Выбор подкатегории (кол-во сайтов)</label>
 									<select className="form-select" aria-label="Выбор подкатегории (кол-во сайтов)" onChange={(e) => handleChange(e.target.value, 'subcategory')}>
-										{Object.keys(sites[category]).map((data, i) => <option key={i} value={data}>{data}</option>)}
+										{window.location.pathname === '/' ? Object.keys(sites[category]).map((data, i) => <option key={i} value={data}>{data}</option>) : <></>}
 									</select>
-									<Link target="_blank" to={link} disabled><button type="button" className="btn btn-success btn-click" disabled={count === 0 ? false : true}>Добавить сайт</button></Link>
+									<button type="button" className="btn btn-success btn-click" disabled={count === 0 ? false : true} onClick={redirect}>Добавить сайт</button>
 									<p>Чтобы кнопка стала активна, нажмите на все баннеры, размещенные на странице</p>
 								</div>
 							</div>
 						}
-						</Route>
-						<Route exact path="/admin" component={Admin} />
-						<Route exact path="/play" component={Play} />
-					</Switch>
+					</Route>
+					<Route exact path="/play" component={Play} />
+				</Switch>
 				<div className="ad__list ad__list__column">
 					{!!data &&
 						data.footer.banners.map((data, i) => (
