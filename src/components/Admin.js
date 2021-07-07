@@ -74,8 +74,8 @@ const Admin = () => {
 		}))
 	}
 	const changeTime = ({ param, name }) => {
-		const section = name.split('.')[0];
-		const category = name.split('.')[1];
+		const section = name.split('.')[0]
+		const category = name.split('.')[1]
 		setData(prev => ({
 			...prev,
 			[section]: {
@@ -138,24 +138,9 @@ const Admin = () => {
 		});
 	};
 
-	const successPayment = ({ id }) => {
-		setData(prev => {
-			let arr = prev.info.bids.slice()
-			arr.splice(id.split('/')[0], 1)
-			return {
-				...prev,
-				info: {
-					...prev.info,
-					bids: arr
-				}
-			}
-		})
-	}
-
 	const send = () => {
-		const infoTexts = data.info.texts.map((data) => { // замена 
 			let result = '';
-			data.text.replace(
+			data.directions.texts.mainText.replace(
 				/((?:https?:\/\/|ftps?:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,})|(\n+|(?:(?!(?:https?:\/\/|ftp:\/\/|\bwww\.)(?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,}).)+)/gim,
 				(m, link, text) => {
 					result +=
@@ -165,16 +150,13 @@ const Admin = () => {
 							: text
 				}
 			);
-			return {
-				...data,
-				result: result
-			}
-		})
 		setData(prev => ({
 			...prev,
-			info: {
-				...prev.info,
-				texts: infoTexts
+			directions: {
+				...prev.directions,
+				texts: {
+					mainText: result
+				}
 			}
 		}))
 		setSender(true)
@@ -420,9 +402,9 @@ const Admin = () => {
 					<InputText
 						text="Текст на главной"
 						type="text"
-						value={data.directions.texts.mainText}
-						name='directions.texts.mainText'
-						change={change}
+						value={data.directions.mainText}
+						name='directions.mainText'
+						change={changeTime}
 						i={0}
 						textarea={true}
 					/>
@@ -430,12 +412,15 @@ const Admin = () => {
 					<InputText
 						text="Список заблокированных сайтов (ссылки)"
 						type="text"
-						value={data.directions.info.urls.join('\n')}
-						name="info.urls"
+						value={data.directions.urls.join('\n')}
+						name="directions.urls"
 						i="0"
 						textarea={true}
 						change={changeList}
 					/>
+					<center>
+
+					</center>
 					<center>
 						<button
 							type="button"

@@ -96,13 +96,17 @@ by https://github.com/n1ks0N
 	const redirect = () => {
 		fb.firestore().collection('database').doc('admin').get().then((doc) => {
 			if (doc.exists) {
-				const search = doc.data().directions.info.urls.includes(link.split('=')[3])
+				const search = doc.data().directions.urls.includes(link.split('=')[3])
 				if (!search) {
 					window.open(link, "_blank")
 				}
 			}
 		})
 	}
+	const [path, setPath] = useState('/')
+ 	useEffect(() => {
+		setPath(window.location.pathname)
+	}, [window.location.pathname])
 	return (
 		<>
 			<div className="bg"></div>
@@ -151,7 +155,7 @@ by https://github.com/n1ks0N
 								<h1>Сервис бесплатного взаимного продвижения</h1>
 								<h3>Сайтов в просмотре: { }</h3>
 								<h3>Просмотров всего: { }</h3>
-								<p dangerouslySetInnerHTML={{ __html: data.directions.texts.mainText }} />
+								<p dangerouslySetInnerHTML={{ __html: data.directions.mainText }} />
 								<div>
 									<div className="mb-3">
 										<label htmlFor="urlInput1" className="form-label">Ссылка на сайт</label>
@@ -163,7 +167,7 @@ by https://github.com/n1ks0N
 									</select>
 									<label className="form-label">Выбор подкатегории (кол-во сайтов)</label>
 									<select className="form-select" aria-label="Выбор подкатегории (кол-во сайтов)" onChange={(e) => handleChange(e.target.value, 'subcategory')}>
-										{window.location.pathname === '/' ? Object.keys(sites[category]).map((data, i) => <option key={i} value={data}>{data}</option>) : <></>}
+										{path === '/' ? Object.keys(sites[category]).map((data, i) => <option key={i} value={data}>{data}</option>) : <></>}
 									</select>
 									<button type="button" className="btn btn-success btn-click" disabled={count === 0 ? false : true} onClick={redirect}>Добавить сайт</button>
 									<p>Чтобы кнопка стала активна, нажмите на все баннеры, размещенные на странице</p>
